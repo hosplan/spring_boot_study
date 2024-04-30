@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -26,6 +25,9 @@ class Coffee{
 	private final String id;
 	private String name;
 
+	public Coffee(){
+		this(UUID.randomUUID().toString(), "Coffee Random");
+	}
 	public Coffee(String id, String name){
 		this.id = id;
 		this.name = name;
@@ -69,7 +71,8 @@ class RestApiDemoController{
 	}
 
 	@GetMapping("/{id}")
-	Optional<Coffee> getCoffees(@PathVariable String id){
+	Optional<Coffee> getCoffees(@PathVariable("id") String id){
+		System.out.println("id = " + id);
 		for(Coffee c: coffees){
 			if(c.getId().equals(id)){
 				return Optional.of(c);
@@ -92,7 +95,7 @@ class RestApiDemoController{
 	//PUT 요청은 파악된 URI를 통해 기존 리소스의 업데이트에 사용된다.
 	//상태 코드는 필수!
 	@PutMapping("/{id}")
-	ResponseEntity<Coffee> putCoffee(@PathVariable String id, @RequestBody Coffee coffee){
+	ResponseEntity<Coffee> putCoffee(@PathVariable("id") String id, @RequestBody Coffee coffee){
 		int coffeeIndex = -1;
 
 		for(Coffee c: coffees){
