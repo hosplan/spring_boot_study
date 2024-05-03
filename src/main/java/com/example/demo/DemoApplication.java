@@ -6,25 +6,41 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class DemoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
+
+
+	//서드 파티 옵션
+	//서드 파티 컴포넌트를 감싸고 해당 속성을 애플리케이션 환경에 통합하는 기능.
+	@Bean
+	@ConfigurationProperties(prefix = "droid")
+	Droid createDroid(){
+		return new Droid();
+	}
 }
+
+
+
 //애플리케이션을 실행 시 스프링 부트 애플리케이션 환경을 확인하고
 //애플리케이션을 설정한 다음, '초기 컨텍스트'를 생성하고 스프링 부트 애플리케이션을 실행한다.
 //최상위 어노테이션 @SpringBootApplication 과 한줄의 코드로 실행한다.
@@ -131,3 +147,61 @@ class DataLoader{
 		));
 	}
 }
+
+@RestController
+@RequestMapping("/greeting")
+class GreetingController{
+//	@Value("${greeting-name: Mirage}")
+//	private String name;
+//
+//	@Value("${greeting-coffee: ${greeting-name} is drinking Cafe Ganador}")
+//	private String coffee;
+
+	private final Greeting greeting;
+
+	public GreetingController(Greeting greeting){
+		this.greeting = greeting;
+	}
+
+	@GetMapping
+	String getGreeting(){
+		return greeting.getName();
+	}
+	@GetMapping("/coffee")
+	String getNameAndCoffee() {
+		return greeting.getCoffee();
+	}
+}
+@RestController
+@RequestMapping("/droid")
+class DroidController{
+	private final Droid droid;
+	public DroidController(Droid droid){
+		this.droid = droid;
+	}
+
+	@GetMapping
+	Droid getDroid(){
+		return droid;
+	}
+}
+//@ConfigurationProperties 빈이 관리하는 속성은 여전히 환경과 환경 속성에 사용될 수도 있는
+//잠재적 소스에서 속성값을 얻는다. @Value 기반 속성과 유일하게 다른 점 하나는 어노테이션이 달리
+//멤버 변수에 기본값을 지정할 수 없다.
+//다양한 배포 환경에서 환경마다 다른 속성값이 필요한 경우, 속성값을 다른 소스를 통해 애플리케이션
+//환경에 적용된다.
+@ConfigurationProperties(prefix="greeting")
+@Getter
+@Setter
+class Greeting{
+	private String name;
+	private String coffee;
+}
+
+@Getter
+@Setter
+class Droid {
+	private String id;
+	private String description;
+}
+
